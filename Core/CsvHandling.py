@@ -48,6 +48,10 @@ def import_data(filename):
 
 
 def archive_patient(first_name, last_name, birthdate):
+    """
+    Moves the CSV-File corresponding to the Patient into the Archive Folder and deletes
+    the Entry in the legend.csv .
+    """
     legend = import_data('legend.csv')
     for s in legend:
         if s[0]==first_name and s[1]==last_name and s[2]==birthdate:
@@ -66,8 +70,6 @@ def archive_patient(first_name, last_name, birthdate):
             writer.writerow(p)
 
 
+if __name__ == '__main__':
+    print(import_data('legend.csv'))
     
-
-create_new('Rike', 'Müller', '20.03.1991')
-create_new('Andreas', 'Wagner', '05.06.1990')
-archive_patient('John', 'Doe', '01.01.2000')
