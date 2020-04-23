@@ -1,5 +1,5 @@
 from tkinter import (Tk, Label, Grid, W, Button, Scale, Radiobutton, Entry, Toplevel, messagebox, 
-                    Frame)
+                    Frame, DoubleVar)
 from CsvHandling import create_new, archive_patient, import_data
 from functools import partial
 
@@ -146,7 +146,20 @@ class PatWindow:
         self.pat_h1 = Label(self.f, text=(patlist[1]+ ' , '+patlist[0]+ '    '+ patlist[2]), font='Times16')
         self.pat_h1.grid(row=1, column=1, sticky=W)
 
-        
+        self.pat_spacer1 = Label(self.f ,text='        ', font='Times 16')
+        self.pat_spacer1.grid(row=2, column=3, sticky=W)
+
+        self.insulin_label = Label(self.f, text='Aktuelle Insulindosis:', font='Times14')
+        self.insulin_label.grid(row=3, column=1, sticky=W)
+        self.insulin_dose = DoubleVar()
+        self.insulin_scale = Scale(self.f, from_=0.0, to=18.0, orient='horizontal', variable=self.insulin_dose,
+                                   resolution=0.1, length=200)
+        self.insulin_scale.grid(row=3, column=2, sticky=W)
+
+        self.bz_old_label = Label(self.f, text= 'Voheriger Blutzucker', font='Times14')
+        self.bz_old_label.grid(row=4, column=1, sticky=W)
+        self.bz_old_entry = Entry(self.f)
+        self.bz_old_entry.grid(row=4, column=2, sticky=W)
 
 
 
