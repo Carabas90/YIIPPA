@@ -1,12 +1,14 @@
-from tkinter import (Tk, Label, Grid, W, Button, Scale, Radiobutton, Entry, Toplevel, messagebox, 
+from tkinter import (Tk, Label, Grid, W, E, Button, Scale, Radiobutton, Entry, Toplevel, messagebox, 
                     Frame, DoubleVar)
 from CsvHandling import create_new, archive_patient, import_data
+from YaleInsulinInfusionProtocol import insulin_adaptation, mmol_to_mg, mg_to_mmol
 from functools import partial
+from datetime import datetime, timedelta
 
 class YiippaGUI:
     def __init__(self, master):
         """
-        Opens the main window, from which inidviduall Patients can be selected and new Patients
+        Opens the main window, from which inidvidual Patients can be selected and new Patients
         can be added.
         """
         self.master = master
@@ -46,7 +48,9 @@ class YiippaGUI:
         """
         Opens the Patient Window.
         """
-        self.pat_window = PatWindow(patlist)
+        self.pat_window = PatWindow(self.master, patlist)
+        self.master.wait_window(self.pat_window.pat_window)
+        self.refresh()
 
     def create_pat_buttons(self, master):
         """
@@ -72,15 +76,20 @@ class YiippaGUI:
         self.__init__(self.master)
 
     def new_pat(self):
-        self.np_window = NpWindow()
+        """
+        Opens an instance of NpWindow. refreshes the main Window, when NpWindow is closed.
+        """
+        self.np_window = NpWindow(self.master)
+        self.master.wait_window(self.np_window.np_window)
+        self.refresh()
 
 
 class NpWindow():
-    def __init__(self):
+    def __init__(self, master):
         """
         Opens an Input-Mask, where a new Patient can be added.
         """
-        self.np_window = Toplevel()
+        self.np_window = Toplevel(master)
         self.np_window.title('Neuer Patient')
 
         self.np_spacer0 = Label(self.np_window,text='        ', font='Times 16')
@@ -133,7 +142,12 @@ class NpWindow():
             self.np_window.destroy()
 
 class PatWindow:
-    def __init__(self, patlist):
+    def __init__(self, master, patlist):
+
+        self.bz_data = import_data(patlist[3])
+        self.bz_data.pop(0)
+        self.now = datetime.now()
+
         self.pat_window = Toplevel()
         self.pat_window.title(patlist[1] + ' , ' + patlist[0])
 
@@ -147,28 +161,131 @@ class PatWindow:
         self.pat_h1.grid(row=1, column=1, sticky=W)
 
         self.pat_spacer1 = Label(self.f ,text='        ', font='Times 16')
-        self.pat_spacer1.grid(row=2, column=3, sticky=W)
+        self.pat_spacer1.grid(row=2, column=4, sticky=W)
 
-        self.insulin_label = Label(self.f, text='Aktuelle Insulindosis:', font='Times14')
+        self.insulin_label = Label(self.f, text='Aktuelle Insulindosis:', font='Arial 14')
         self.insulin_label.grid(row=3, column=1, sticky=W)
-        self.insulin_dose = DoubleVar()
-        self.insulin_scale = Scale(self.f, from_=0.0, to=18.0, orient='horizontal', variable=self.insulin_dose,
+        self.insulin_rate = DoubleVar()
+        self.insulin_scale = Scale(self.f, from_=0.0, to=18.0, orient='horizontal', variable=self.insulin_rate,
                                    resolution=0.1, length=200)
-        self.insulin_scale.grid(row=3, column=2, sticky=W)
+        self.insulin_scale.grid(row=3, column=2, sticky=W, columnspan=2)
+        if self.bz_data:
+            self.insulin_scale.set(self.bz_data[-1][2])
 
-        self.bz_old_label = Label(self.f, text= 'Voheriger Blutzucker', font='Times14')
+        self.bz_old_label = Label(self.f, text= 'Voheriger Blutzucker:', font='Arial 14')
         self.bz_old_label.grid(row=4, column=1, sticky=W)
-        self.bz_old_entry = Entry(self.f)
+        self.bz_old_entry = Entry(self.f, width=10)
         self.bz_old_entry.grid(row=4, column=2, sticky=W)
+        if self.bz_data:
+            self.bz_old_entry.insert(0, str(self.bz_data[-1][3]))
+
+        self.bz_old_t_label = Label(self.f, text='Zeitpunkt des voherigen Blutzuckers:               '
+                                    ,font='Arial 14')
+        self.bz_old_t_label.grid(row=5, column=1, sticky=W)
+        self.bz_old_d_entry = Entry(self.f, width=12)
+        self.bz_old_d_entry.grid(row=5, column=2, sticky=W)
+        self.bz_old_t_entry = Entry(self.f, width=8)
+        self.bz_old_t_entry.grid(row=5, column=3, sticky=W)
+        if self.bz_data:
+            self.bz_old_d_entry.insert(0,self.bz_data[-1][0])
+            self.bz_old_d_entry.insert(0, self.bz_data[-1][1])
+        else:
+            self.bz_old_d_entry.insert(0, self.now.strftime('%d.%m.%Y'))
+
+        self.pat_spacer2 = Label(self.f ,text='        ', font='Arial 16')
+        self.pat_spacer2.grid(row=6, column=4, sticky=W)
+
+        self.bz_new_label = Label(self.f, text= 'Aktueller Blutzucker:', font='Arial 14')
+        self.bz_new_label.grid(row=7, column=1, sticky=W)
+        self.bz_new_entry = Entry(self.f, width=10)
+        self.bz_new_entry.grid(row=7, column=2, sticky=W) 
+        
+        self.bz_new_dt_label = Label(self.f, text='Zeitpunkt des aktuellen Blutzuckers:               '
+                                    ,font='Arial 14')
+        self.bz_new_dt_label.grid(row=8, column=1, sticky=W)
+        self.bz_new_d_entry = Entry(self.f, width=12)
+        self.bz_new_d_entry.grid(row=8, column=2, sticky=W)
+        self.bz_new_t_entry = Entry(self.f, width=8)
+        self.bz_new_t_entry.grid(row=8, column=3, sticky=W)
+        self.bz_new_d_entry.insert(0, self.now.strftime('%d.%m.%Y'))
+        self.bz_new_t_entry.insert(0, self.now.strftime('%H:%M'))
+
+        self.pat_spacer3 = Label(self.f ,text='        ', font='Arial 16')
+        self.pat_spacer3.grid(row=9, column=4, sticky=W)
+
+        self.insulin_adjustment = Label(self.f ,text='        ', font='Arial 16')
+        self.insulin_adjustment.grid(row=10, column=1, columnspan=2, sticky=W)
+
+        self.pat_spacer4 = Label(self.f ,text='        ', font='Arial 16')
+        self.pat_spacer4.grid(row=11, column=4, sticky=W)
+
+        self.ca = partial(self.conf_archive, patlist)
+        self.archive_button = Button(self.f, text='Patient archivieren', command=self.ca)
+        self.archive_button.grid(row=12, column=1, sticky=W)
+
+        self.calc_button = Button(self.f, text='Berechnen', command=self.calc)
+        self.calc_button.grid(row=12, column=3, sticky=W)
+
+        self.pat_spacer6 = Label(self.f ,text='        ', font='Arial 16')
+        self.pat_spacer6.grid(row=13, column=4, sticky=W)
 
 
+    def conf_archive(self, patlist):
+        self.conf_window = Toplevel()
+        self.conf_window.title('Bitte bestätigen!')
+
+        self.conf_spacer0 = Label(self.conf_window, text='        ', font='Arial 16')
+        self.conf_spacer0.grid(row=0, column=0, sticky=W)
+        
+        self.conf_label = Label(self.conf_window, text=('Sind Sie sicher, dass Sie '+ patlist[1] + ' , ' + patlist[0]
+                                    + ' archivieren wollen. \n Die Patientendaten können nachträglich nicht'+ 
+                                    'wiederhergestellt werden.'), font= 'Arial 14')
+        self.conf_label.grid(row=1, column=1, rowspan=2, columnspan=3, sticky=W)
+
+        self.conf_spacer1 = Label(self.conf_window, text='        ', font='Arial 16')
+        self.conf_spacer1.grid(row=3, column=4, sticky=W)
+
+        self.cancel_button = Button(self.conf_window, text='Abbrechen', command=self.conf_window.destroy)
+        self.cancel_button.grid(row=4, column=1, sticky=W)
+
+        self.a = partial(self.archive, patlist)
+        self.confirm_button = Button(self.conf_window, text='Archivieren', command=self.a)
+        self.confirm_button.grid(row=4, column=3, sticky=E)
+
+        self.conf_spacer1 = Label(self.conf_window, text='        ', font='Arial 16')
+        self.conf_spacer1.grid(row=5, column=4, sticky=W)
 
 
+    def archive(self, patlist):
+        archive_patient(patlist[0], patlist[1], patlist[2])
+        self.conf_window.destroy()
+        self.pat_window.destroy()
 
+    def calc(self):
+        try:    
+            bg = int(self.bz_new_entry.get())
+            dt_old = datetime.strptime((self.bz_old_d_entry.get()+self.bz_old_t_entry.get()), '%d.%m.%Y%H:%M')
+            dt_new = datetime.strptime((self.bz_new_d_entry.get()+self.bz_new_t_entry.get()), '%d.%m.%Y%H:%M')
+            dt_delta = dt_new - dt_old
+            dt_change = (dt_delta.days * 24) + (dt_delta.seconds / 3600)
+       
+            if dt_change <= 0:
+                messagebox.showerror(message='Zeitpunkt des voherigen Blutzuckers liegt nach dem' +
+                                 'Zeitpunkt des aktuellen Blutzuckers')
+                return
+        
+            bg_change = (bg - int(self.bz_old_entry.get())) / dt_change
+            insulin_rate = self.insulin_rate.get()
+        
+        except:
+            messagebox.showerror(message='Ungültige Eingabe in mindestens einem Feld!')
+            return
 
+        insulin_adapted = insulin_adaptation(bg, bg_change, insulin_rate)
 
-
-
+        self.insulin_adjustment['text'] = 'Die neue Insulin-Laufrate ist ' + str(insulin_adapted) + ' IE/h!'
+        
+    
 
 if __name__ == '__main__':
     root = Tk()

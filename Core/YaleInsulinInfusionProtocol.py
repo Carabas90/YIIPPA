@@ -34,12 +34,14 @@ def insulin_adaptation(bloodglucose, bg_change, insulin_rate):
     elif (((bloodglucose >= 180) and (bg_change >= 50))):
             insulin_rate += 2*d
     
-    return insulin_rate
+    return round(insulin_rate, 2)
 
 
 def mmol_to_mg(mmol):
     return round(mmol*18.02 , 0)
 
+def mg_to_mmol(mg):
+    return round(mg*0.0555, 2)
 
 if __name__ == "__main__":
-   print(mmol_to_mg(33.3))
+   print(mmol_to_mg(mg_to_mmol(135)))

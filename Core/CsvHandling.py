@@ -8,14 +8,14 @@ import shutil
 def create_new(first_name, last_name, birthdate):
     """
     Creates a new CSV-File with the standard header and adds an entry in legend.csv. The filename 
-    is bates on dtetime.now() with a random int thrown in as a last digit, to avoid collisions if
+    is based on datetime.now() with a random int thrown in as a last digit, to avoid collisions if
     application is ever used in a large scale setting.
     """
     filename = datetime.datetime.now().strftime(format='%Y%m%d%H%M%S')+str(random.randint(0,9))+'.csv'
     p = os.path.join(os.curdir , 'PatientData/', filename)
     with open(p, 'w', newline='\n') as f:
         writer = csv.writer(f)
-        header = ['datetime', 'insulin_dose', 'blood_glucose' ]
+        header = ['date','time', 'insulin_dose', 'blood_glucose' ]
         writer.writerow(header)
     
     p = os.path.join(os.curdir, 'PatientData/', 'legend.csv')
