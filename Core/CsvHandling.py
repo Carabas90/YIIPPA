@@ -15,7 +15,7 @@ def create_new(first_name, last_name, birthdate):
     p = os.path.join(os.curdir , 'PatientData/', filename)
     with open(p, 'w', newline='\n') as f:
         writer = csv.writer(f)
-        header = ['date','time', 'insulin_dose', 'blood_glucose' ]
+        header = ['date','time', 'insulin_rate', 'blood_glucose' ]
         writer.writerow(header)
     
     p = os.path.join(os.curdir, 'PatientData/', 'legend.csv')
@@ -68,6 +68,15 @@ def archive_patient(first_name, last_name, birthdate):
         writer = csv.writer(l)
         for p in legend:
             writer.writerow(p)
+
+def write_line(filename, data_list):
+    """
+    Writes one line of Data to the corresponding Patients File.
+    """
+    path = os.path.join(os.curdir, 'PatientData/', filename)
+    with open(path, 'a', newline='\n') as f:
+        writer = csv.writer(f)
+        writer.writerow(data_list)
 
 
 if __name__ == '__main__':

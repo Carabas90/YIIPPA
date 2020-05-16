@@ -1,9 +1,10 @@
 from tkinter import (Tk, Label, Grid, W, E, Button, Scale, Radiobutton, Entry, Toplevel, messagebox, 
                     Frame, DoubleVar)
-from CsvHandling import create_new, archive_patient, import_data
+from CsvHandling import create_new, archive_patient, import_data, write_line
 from YaleInsulinInfusionProtocol import insulin_adaptation, mmol_to_mg, mg_to_mmol
 from functools import partial
 from datetime import datetime, timedelta
+from Setup import setup
 
 class YiippaGUI:
     def __init__(self, master):
@@ -143,13 +144,17 @@ class NpWindow():
 
 class PatWindow:
     def __init__(self, master, patlist):
-
-        self.bz_data = import_data(patlist[3])
+        """
+        Opens the Patient Window, which serves as an Entry Mask for Blood Glucose Data, and allows
+        the User to calculate the new Insulin Rate or to archive the Patient.
+        """
+        self.patlist = patlist
+        self.bz_data = import_data(self.patlist[3])
         self.bz_data.pop(0)
         self.now = datetime.now()
 
         self.pat_window = Toplevel()
-        self.pat_window.title(patlist[1] + ' , ' + patlist[0])
+        self.pat_window.title(self.patlist[1] + ' , ' + self.patlist[0])
 
         self.f = Frame(self.pat_window)
         self.f.grid()
@@ -157,7 +162,7 @@ class PatWindow:
         self.pat_spacer0 = Label(self.f ,text='        ', font='Times 16')
         self.pat_spacer0.grid(row=0, column=0, sticky=W)
 
-        self.pat_h1 = Label(self.f, text=(patlist[1]+ ' , '+patlist[0]+ '    '+ patlist[2]), font='Times16')
+        self.pat_h1 = Label(self.f, text=(self.patlist[1]+ ' , '+self.patlist[0]+ '    '+ self.patlist[2]), font='Times16')
         self.pat_h1.grid(row=1, column=1, sticky=W)
 
         self.pat_spacer1 = Label(self.f ,text='        ', font='Times 16')
@@ -179,16 +184,16 @@ class PatWindow:
         if self.bz_data:
             self.bz_old_entry.insert(0, str(self.bz_data[-1][3]))
 
-        self.bz_old_t_label = Label(self.f, text='Zeitpunkt des voherigen Blutzuckers:               '
+        self.bz_old_dt_label = Label(self.f, text='Zeitpunkt des voherigen Blutzuckers:               '
                                     ,font='Arial 14')
-        self.bz_old_t_label.grid(row=5, column=1, sticky=W)
+        self.bz_old_dt_label.grid(row=5, column=1, sticky=W)
         self.bz_old_d_entry = Entry(self.f, width=12)
         self.bz_old_d_entry.grid(row=5, column=2, sticky=W)
         self.bz_old_t_entry = Entry(self.f, width=8)
         self.bz_old_t_entry.grid(row=5, column=3, sticky=W)
         if self.bz_data:
             self.bz_old_d_entry.insert(0,self.bz_data[-1][0])
-            self.bz_old_d_entry.insert(0, self.bz_data[-1][1])
+            self.bz_old_t_entry.insert(0, self.bz_data[-1][1])
         else:
             self.bz_old_d_entry.insert(0, self.now.strftime('%d.%m.%Y'))
 
@@ -257,11 +262,18 @@ class PatWindow:
 
 
     def archive(self, patlist):
-        archive_patient(patlist[0], patlist[1], patlist[2])
+        """
+        Archives Patient and closes all corresponding Windows.
+        """
+        archive_patient(self.patlist[0], self.patlist[1], self.patlist[2])
         self.conf_window.destroy()
         self.pat_window.destroy()
 
     def calc(self):
+        """
+        Calculates the new Insulin Rate unsin the Yale Insulin Infusion Protocol, and writes the Data
+        to the Patients CSV-File.
+        """
         try:    
             bg = int(self.bz_new_entry.get())
             dt_old = datetime.strptime((self.bz_old_d_entry.get()+self.bz_old_t_entry.get()), '%d.%m.%Y%H:%M')
@@ -285,9 +297,16 @@ class PatWindow:
 
         self.insulin_adjustment['text'] = 'Die neue Insulin-Laufrate ist ' + str(insulin_adapted) + ' IE/h!'
         
-    
+        self.data_old = [self.bz_old_d_entry.get(), self.bz_old_t_entry.get(), self.insulin_rate.get(), self.bz_old_entry.get()]
+        if (not self.bz_data) or (self.bz_data[-1] != self.data_old):
+            write_line(self.patlist[3], self.data_old)
+
+        self.data_new = [self.bz_new_d_entry.get(), self.bz_new_t_entry.get(), self.insulin_rate.get(), self.bz_new_entry.get()]
+        write_line(self.patlist[3], self.data_new)
+
 
 if __name__ == '__main__':
+    setup()
     root = Tk()
     sofa_gui = YiippaGUI(root)
     root.mainloop()
