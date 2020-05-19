@@ -1,8 +1,14 @@
 def insulin_adaptation(bloodglucose, bg_change, insulin_rate):
+    """
+    This function uses the Yale Insulin Infusion Protocol to calculate the new insulin rate,
+    from the current insulin rate(in I.E/h), the current bloodglucose levels(in mg/dl), 
+    and the hourly change in blood glucose (in mg/dl/h) levels since the last measurement. 
+    """
     if insulin_rate >19 or insulin_rate < 0:
         raise Exception('insulin_rate out of reach of Protocol.insulin_rate has to be between 0-19 IE/h')
     elif insulin_rate < 3:
-        d = 0.5
+        d = 0.5 
+        # The change of the insulin rate is dependant on the current insulin_rate to reflect the insulin sensitivity of the Patient.
     elif insulin_rate <= 6:
         d = 1
     elif insulin_rate <= 9:

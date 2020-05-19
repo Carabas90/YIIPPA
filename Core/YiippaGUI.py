@@ -19,19 +19,19 @@ class YiippaGUI:
         self.mf = Frame(master)
         self.mf.grid()
 
-        self.spacer0 = Label(self.mf, text='              ', font='Times 20')
+        self.spacer0 = Label(self.mf, text='              ', font='Arial 20')
         self.spacer0.grid(row=0, column=0)
 
-        self.h1 = Label(self.mf, text='Yale Insulin Infusion Protocol', font='Times16')
+        self.h1 = Label(self.mf, text='Yale Insulin Infusion Protocol', font='Arial16')
         self.h1.grid(row=2, column=2, sticky=W)
 
-        self.spacer1 = Label(self.mf, text='              ', font='Times 16')
+        self.spacer1 = Label(self.mf, text='              ', font='Arial 16')
         self.spacer1.grid(row=3, column=4)
 
         self.i = self.create_pat_buttons(self.mf)
         self.i += 1
 
-        self.spacer2 = Label(self.mf, text='              ', font='Times 16')
+        self.spacer2 = Label(self.mf, text='              ', font='Arial 16')
         self.spacer2.grid(row=self.i, column=4)
         self.i += 1
 
@@ -42,7 +42,7 @@ class YiippaGUI:
         self.refresh_b.grid(row=self.i, column=3)
         self.i += 1
         
-        self.spacer3 = Label(self.mf, text='              ', font='Times 16')
+        self.spacer3 = Label(self.mf, text='              ', font='Arial 16')
         self.spacer3.grid(row=self.i, column=4)
         
     def open_pat(self, patlist):
@@ -59,15 +59,16 @@ class YiippaGUI:
         with which the Patient Window can be accessed.
         """
         pats = import_data('legend.csv')
-        pats.pop(0)
-        i = 4
+        pats.pop(0) # Removes CSV-Header from the list
+        i = 4 # Row to start showing the Buttons
         for p in pats:
             pat_name = p[1].title() + ' , ' + p[0].title() + '   ' + p[2]
-            com = partial(self.open_pat, p)
+            com = partial(self.open_pat, p) # Commands in Buttons can't have arguments, 
+            #thats why partial is used to pass a function with arguments to the button
             pat_button = Button(master, text=pat_name, command=com)
             pat_button.grid(row=i , column=2)
             i += 1
-        return i
+        return i # Returns the last value for i, as a reference point for the rest of the GUI
 
     def refresh(self):
         """
@@ -93,37 +94,37 @@ class NpWindow():
         self.np_window = Toplevel(master)
         self.np_window.title('Neuer Patient')
 
-        self.np_spacer0 = Label(self.np_window,text='        ', font='Times 16')
+        self.np_spacer0 = Label(self.np_window,text='        ', font='Arial 16')
         self.np_spacer0.grid(row=0, column=0, sticky=W)
 
-        self.np_spacer1 = Label(self.np_window,text='        ', font='Times 16')
+        self.np_spacer1 = Label(self.np_window,text='        ', font='Arial 16')
         self.np_spacer1.grid(row=2, column=3, sticky=W)
 
-        self.np_h1 = Label(self.np_window, text='Neuen Patienten aufnehmen:', font='Times16')
+        self.np_h1 = Label(self.np_window, text='Neuen Patienten aufnehmen:', font='Arial16')
         self.np_h1.grid(row=1, column=1, sticky=W)
 
-        self.np_name_label = Label(self.np_window, text='Nachname', font='Times14')
+        self.np_name_label = Label(self.np_window, text='Nachname', font='Arial 14')
         self.np_name_label.grid(row=3, column=1, sticky=W)
         self.np_name_entry = Entry(self.np_window)
         self.np_name_entry.grid(row=3, column=2, sticky=W)
 
-        self.np_fname_label = Label(self.np_window, text='Vorname', font='Times14')
+        self.np_fname_label = Label(self.np_window, text='Vorname', font='Arial 14')
         self.np_fname_label.grid(row=4, column=1, sticky=W)
         self.np_fname_entry = Entry(self.np_window)
         self.np_fname_entry.grid(row=4, column=2, sticky=W)
 
-        self.np_birthdate_label = Label(self.np_window, text='Geburtsdatum', font='Times14')
+        self.np_birthdate_label = Label(self.np_window, text='Geburtsdatum', font='Arial 14')
         self.np_birthdate_label.grid(row=5, column=1, sticky=W)
         self.np_birthdate_entry = Entry(self.np_window)
         self.np_birthdate_entry.grid(row=5, column=2, sticky=W)
 
-        self.np_spacer2 = Label(self.np_window,text='        ', font='Times 16')
+        self.np_spacer2 = Label(self.np_window,text='        ', font='Arial 16')
         self.np_spacer2.grid(row=6, column=3, sticky=W)
 
         self.np_add_pat_button = Button(self.np_window, text='Patient aufnehmen', command= self.add_pat)
         self.np_add_pat_button.grid(row=7,column=2)
 
-        self.np_spacer3 = Label(self.np_window,text='        ', font='Times 16')
+        self.np_spacer3 = Label(self.np_window,text='        ', font='Arial 16')
         self.np_spacer3.grid(row=8, column=3, sticky=W)
 
     def add_pat(self):
@@ -145,12 +146,12 @@ class NpWindow():
 class PatWindow:
     def __init__(self, master, patlist):
         """
-        Opens the Patient Window, which serves as an Entry Mask for Blood Glucose Data, and allows
-        the User to calculate the new Insulin Rate or to archive the Patient.
+        Opens the Patient Window, which serves as an entry mask for Blood-Glucose data, and allows
+        the User to calculate the new insulin-rate or to archive the Patient.
         """
         self.patlist = patlist
-        self.bz_data = import_data(self.patlist[3])
-        self.bz_data.pop(0)
+        self.bz_data = import_data(self.patlist[3]) # Reads the Data from the CSV-File in the patlist
+        self.bz_data.pop(0) # Removes CSV-Header
         self.now = datetime.now()
 
         self.pat_window = Toplevel()
@@ -159,13 +160,13 @@ class PatWindow:
         self.f = Frame(self.pat_window)
         self.f.grid()
 
-        self.pat_spacer0 = Label(self.f ,text='        ', font='Times 16')
+        self.pat_spacer0 = Label(self.f ,text='        ', font='Arial 16')
         self.pat_spacer0.grid(row=0, column=0, sticky=W)
 
-        self.pat_h1 = Label(self.f, text=(self.patlist[1]+ ' , '+self.patlist[0]+ '    '+ self.patlist[2]), font='Times16')
+        self.pat_h1 = Label(self.f, text=(self.patlist[1]+ ' , '+self.patlist[0]+ '    '+ self.patlist[2]), font='Arial16')
         self.pat_h1.grid(row=1, column=1, sticky=W)
 
-        self.pat_spacer1 = Label(self.f ,text='        ', font='Times 16')
+        self.pat_spacer1 = Label(self.f ,text='        ', font='Arial 16')
         self.pat_spacer1.grid(row=2, column=4, sticky=W)
 
         self.insulin_label = Label(self.f, text='Aktuelle Insulindosis:', font='Arial 14')

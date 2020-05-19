@@ -2,7 +2,7 @@ import os
 
 def setup():
     """
-    Checks if Data-Folders exist, creates them if not.
+    Checks if Data-Directories exist, creates them if not.
     """
     if not os.path.exists(os.path.join(os.curdir, 'PatientData/')):
         os.mkdir('PatientData')

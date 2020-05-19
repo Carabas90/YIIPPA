@@ -36,7 +36,7 @@ def create_new(first_name, last_name, birthdate):
 
 def import_data(filename):
     """
-    Imports the Data of a csv file as a nested list, including the header.
+    Imports the Data of a CSV-file as a nested list, including the header.
     """
     path = os.path.join(os.curdir, 'PatientData/', filename)
     with open(path, 'r', newline='\n') as f:
@@ -71,7 +71,7 @@ def archive_patient(first_name, last_name, birthdate):
 
 def write_line(filename, data_list):
     """
-    Writes one line of Data to the corresponding Patients File.
+    Writes one line of Data to the corresponding patients file.
     """
     path = os.path.join(os.curdir, 'PatientData/', filename)
     with open(path, 'a', newline='\n') as f:
